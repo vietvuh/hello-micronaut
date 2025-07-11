@@ -62,7 +62,7 @@ public record Resource(
         }
 
         if (patchValue.updatedFields().contains("parentId")) {
-            builder.ownerId(patchValue.data().parentId());
+            builder.parentId(patchValue.data().parentId());
         }
 
         if (patchValue.updatedFields().contains("sharedWith")) {
