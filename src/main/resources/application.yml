@@ -1,0 +1,4 @@
+# Fri Jul 11 19:32:32 ICT 2025
+micronaut:
+  application:
+    name: resources

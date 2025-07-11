@@ -1,0 +1,309 @@
+openapi: 3.1.0
+info:
+  title: Resource Management API
+  version: 1.0.0
+servers:
+  - url: /v0
+paths:
+  /applications/{applicationKey}/resources/{id}:
+    get:
+      operationId: getResource
+      summary: Get a resource by ID
+      parameters:
+        - name: applicationKey
+          in: path
+          required: true
+          description: Application key (minimum 3 characters)
+          schema:
+            type: string
+            minLength: 3
+            pattern: '^.+$'
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier for the resource
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Resource found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateResource
+      summary: Update a resource
+      parameters:
+        - name: applicationKey
+          in: path
+          required: true
+          description: Application key (minimum 3 characters)
+          schema:
+            type: string
+            minLength: 3
+            pattern: '^.+$'
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier for the resource
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+      responses:
+        '200':
+          description: Resource updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: patchResource
+      summary: Partially update a resource
+      parameters:
+        - name: applicationKey
+          in: path
+          required: true
+          description: Application key (minimum 3 characters)
+          schema:
+            type: string
+            minLength: 3
+            pattern: '^.+$'
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier for the resource
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceForPatch'
+      responses:
+        '200':
+          description: Resource partially updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteResource
+      summary: Delete a resource
+      parameters:
+        - name: applicationKey
+          in: path
+          required: true
+          description: Application key (minimum 3 characters)
+          schema:
+            type: string
+            minLength: 3
+            pattern: '^.+$'
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier for the resource
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Resource deleted successfully
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /applications/{applicationKey}/resources:
+    post:
+      operationId: createResource
+      summary: Create a new resource
+      parameters:
+        - name: applicationKey
+          in: path
+          required: true
+          description: Application key (minimum 3 characters)
+          schema:
+            type: string
+            minLength: 3
+            pattern: '^.+$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+      responses:
+        '201':
+          description: Resource created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+components:
+  schemas:
+    Resource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          minLength: 1
+          maxLength: 100
+        ownerId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+        sharedWith:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 1000
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 100
+        details:
+          type: object
+          additionalProperties:
+            type: object
+        createdAt:
+          type: number
+          format: int64
+          description: Creation timestamp as epoch time in milliseconds
+        createdBy:
+          type: string
+          format: uuid
+        updatedAt:
+          type: number
+          format: int64
+          description: Last update timestamp as epoch time in milliseconds
+        updatedBy:
+          type: string
+          format: uuid
+      required:
+        - id
+        - type
+        - ownerId
+    ResourceForPatch:
+      type: object
+      properties:
+        updatedFields:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          minItems: 1
+          maxItems: 20
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              minLength: 1
+              maxLength: 100
+            ownerId:
+              type: string
+              format: uuid
+            parentId:
+              type: string
+              format: uuid
+            sharedWith:
+              type: array
+              items:
+                type: string
+                format: uuid
+              maxItems: 1000
+            tags:
+              type: array
+              items:
+                type: string
+                minLength: 1
+                maxLength: 50
+              maxItems: 100
+            details:
+              type: object
+              additionalProperties:
+                type: object
+      required:
+        - updatedFields
+        - data
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - code
+    AuditFields:
+      type: object
+      properties:
+        createdAt:
+          type: number
+          format: int64
+          description: Creation timestamp as epoch time in milliseconds
+        createdBy:
+          type: string
+          format: uuid
+        updatedAt:
+          type: number
+          format: int64
+          description: Last update timestamp as epoch time in milliseconds
+        updatedBy:
+          type: string
+          format: uuid
