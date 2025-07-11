@@ -1,5 +1,7 @@
 package vvu.centrauthz.domains.resources.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import io.micronaut.serde.annotation.Serdeable;
 import io.micronaut.core.annotation.Introspected;
@@ -15,9 +17,10 @@ import java.util.UUID;
  */
 @Serdeable
 @Introspected
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @Builder(toBuilder = true)
 public record Resource(
-    @NonNull
     UUID id,
     
     @NonNull
@@ -37,8 +40,7 @@ public record Resource(
     
     @Nullable
     Map<String, Object> details,
-    
-    // Audit fields - flattened
+
     @Nullable
     Long createdAt,
     
@@ -51,4 +53,30 @@ public record Resource(
     @Nullable
     UUID updatedBy
 ) {
+    public Resource patch(ResourceForPatch patchValue) {
+        // Apply the patch to this resource
+        var builder = this.toBuilder();
+
+        if (patchValue.updatedFields().contains("ownerId")) {
+            builder.ownerId(patchValue.data().ownerId());
+        }
+
+        if (patchValue.updatedFields().contains("parentId")) {
+            builder.ownerId(patchValue.data().parentId());
+        }
+
+        if (patchValue.updatedFields().contains("sharedWith")) {
+            builder.sharedWith(patchValue.data().sharedWith());
+        }
+
+        if (patchValue.updatedFields().contains("tags")) {
+            builder.tags(patchValue.data().tags());
+        }
+
+        if (patchValue.updatedFields().contains("details")) {
+            builder.details(patchValue.data().details());
+        }
+
+        return builder.build();
+    }
 }

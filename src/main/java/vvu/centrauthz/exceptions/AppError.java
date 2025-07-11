@@ -27,8 +27,6 @@ public class AppError extends RuntimeException {
 
     @Override
     public String toString() {
-        return "AppError{" +
-                "error=" + error +
-                '}';
+        return "{ error=" + error + '}';
     }
 }
