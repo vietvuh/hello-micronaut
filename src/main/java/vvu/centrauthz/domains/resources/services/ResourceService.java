@@ -2,6 +2,7 @@ package vvu.centrauthz.domains.resources.services;
 
 
 import jakarta.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.domains.resources.models.ResourceForPatch;
@@ -11,11 +12,15 @@ import vvu.centrauthz.domains.resources.repositories.Writable;
 import vvu.centrauthz.exceptions.ConflictError;
 import vvu.centrauthz.exceptions.EUtils;
 import vvu.centrauthz.exceptions.NotFoundError;
+import vvu.centrauthz.models.Void;
+import vvu.centrauthz.utilities.Context;
+import vvu.centrauthz.utilities.Executor;
 
 import java.util.Objects;
 import java.util.UUID;
 
 @Singleton
+@Slf4j
 public class ResourceService {
 
     private final Readable readable;
@@ -26,9 +31,9 @@ public class ResourceService {
             Readable readable,
             Writable writable,
             Removable removable) {
-        this.readable = readable;
-        this.writable = writable;
-        this.removable = removable;
+        this.readable = Objects.requireNonNull(readable);
+        this.writable = Objects.requireNonNull(writable);
+        this.removable = Objects.requireNonNull(removable);
     }
 
     static NotFoundError resourceNotFound(String appKey, UUID id) {
@@ -43,29 +48,36 @@ public class ResourceService {
     }
 
     public Mono<Resource> get(String appKey, UUID id) {
-        return getResource(appKey, id);
+        return Executor.mono(() -> getResource(appKey, id)).withLogger(log).execute();
     }
 
-    private Mono<Resource> createResource(String appKey, Resource resource, ServiceContext context) {
+    private Mono<Resource> createResource(String appKey, Resource resource, Context context) {
         var newRes = resource.toBuilder().createdBy(context.user().id()).createdAt(System.currentTimeMillis()).build();
         return writable.save(appKey, newRes).map(v -> newRes);
     }
 
-    public Mono<Resource> create(String appKey, final Resource resource, ServiceContext context) {
+    public Mono<Resource> create(String appKey, final Resource resource, Context context) {
 
         var id = Objects.isNull(resource.id()) ? UUID.randomUUID() : resource.id();
 
         String eMess = String.format("Resource with ID %s is existing", id);
 
-        return readable
-                .get(appKey, id)
-                .flatMap(r -> Mono.<Resource>error(new ConflictError(eMess)))
-                .switchIfEmpty(
-                        Mono.fromCallable(() -> resource.toBuilder().id(id).build())
-                                .flatMap(r -> createResource(appKey, r, context)));
+        return Executor.mono(() ->
+             readable
+                    .get(appKey, id)
+                    .flatMap(r -> Mono.<Resource>error(new ConflictError(eMess)))
+                    .doOnNext( r -> log.info("Resource already exists: {}", r))
+                    .switchIfEmpty(
+                            Mono.fromCallable(() -> resource.toBuilder().id(id).build())
+                                    .doOnNext( r -> log.info("Resource to be created: {}", r))
+                                    .flatMap(r -> createResource(appKey, r, context))
+                                    .doOnNext( v -> log.info("Resource created: {}", v)))
+        ).execute();
+
+
     }
 
-    public Mono<Void> save(String appKey, Resource resource, ServiceContext context) {
+    public Mono<Void> save(String appKey, Resource resource, Context context) {
         return getResource(appKey, resource.id())
                 .flatMap(r -> {
                     r = r.toBuilder()
@@ -76,7 +88,7 @@ public class ResourceService {
                 });
     }
 
-    public Mono<Void> patch(String appKey, UUID id, ResourceForPatch patcher, ServiceContext context) {
+    public Mono<Void> patch(String appKey, UUID id, ResourceForPatch patcher, Context context) {
 
         return getResource(appKey, id)
                 .flatMap(resource -> {

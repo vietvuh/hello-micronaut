@@ -7,6 +7,7 @@ import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.domains.resources.repositories.Readable;
 import vvu.centrauthz.domains.resources.repositories.Removable;
 import vvu.centrauthz.domains.resources.repositories.Writable;
+import vvu.centrauthz.models.Void;
 
 import java.util.Objects;
 import java.util.UUID;

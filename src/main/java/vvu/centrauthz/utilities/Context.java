@@ -1,4 +1,4 @@
-package vvu.centrauthz.domains.resources.services;
+package vvu.centrauthz.utilities;
 
 import lombok.Builder;
 import vvu.centrauthz.domains.resources.models.User;
@@ -6,8 +6,8 @@ import vvu.centrauthz.domains.resources.models.User;
 import java.util.Objects;
 
 @Builder(toBuilder = true)
-public record ServiceContext(User user) {
-    public ServiceContext {
+public record Context(User user, String appKey) {
+    public Context {
         if (Objects.isNull(user)) {
             user = User.builder().build();
         }

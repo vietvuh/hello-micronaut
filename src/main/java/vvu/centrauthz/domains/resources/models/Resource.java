@@ -22,6 +22,9 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 public record Resource(
     UUID id,
+
+    @NonNull
+    String applicationKey,
     
     @NonNull
     String type,

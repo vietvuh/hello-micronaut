@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.domains.resources.models.ResourceForPatch;
 import vvu.centrauthz.domains.resources.services.ResourceService;
-import vvu.centrauthz.domains.resources.services.ServiceContext;
+import vvu.centrauthz.utilities.Context;
 import vvu.centrauthz.exceptions.BadRequestError;
 
 import java.util.Objects;
@@ -64,7 +64,7 @@ public class ResourceController {
             return Mono.error(new BadRequestError("INVALID_ID", "Resource ID in path does not match resource ID in body"));
         }
 
-        return service.save(applicationKey, resource, ServiceContext.builder().build()).map(v -> HttpResponse.noContent());
+        return service.save(applicationKey, resource, Context.builder().build()).map(v -> HttpResponse.noContent());
     }
 
     /**
@@ -81,7 +81,7 @@ public class ResourceController {
             @PathVariable @NonNull UUID id,
             @Body @NonNull ResourceForPatch resourcePatch) {
 
-        return service.patch(applicationKey, id, resourcePatch, ServiceContext.builder().build()).map(v -> HttpResponse.noContent());
+        return service.patch(applicationKey, id, resourcePatch, Context.builder().build()).map(v -> HttpResponse.noContent());
     }
 
     /**
@@ -111,7 +111,7 @@ public class ResourceController {
             @PathVariable @NonNull String applicationKey,
             @Body @NonNull Resource resource) {
         return service
-                .create(applicationKey, resource, ServiceContext.builder().build())
+                .create(applicationKey, resource, Context.builder().build())
                 .map(HttpResponse::created);
     }
 }
