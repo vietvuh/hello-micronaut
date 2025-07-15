@@ -9,6 +9,7 @@ group = "vvu.centrauthz"
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
@@ -26,10 +27,9 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("org.yaml:snakeyaml")
     testImplementation("io.micronaut:micronaut-http-client")
-    testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("io.projectreactor:reactor-test:3.8.0-M4")
+    testImplementation("org.mockito:mockito-core:5.18.0")
 }
-
 
 application {
     mainClass = "vvu.centrauthz.Application"
