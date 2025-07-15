@@ -51,33 +51,45 @@ public class ResourceService {
         return Executor.mono(() -> getResource(appKey, id)).withLogger(log).execute();
     }
 
-    private Mono<Resource> createResource(String appKey, Resource resource, Context context) {
-        var newRes = resource.toBuilder().createdBy(context.user().id()).createdAt(System.currentTimeMillis()).build();
+    private Mono<Resource> saveNewResource(String appKey, Resource resource, Context context) {
+        var newRes = resource
+                .toBuilder()
+                .createdBy(context.user().id())
+                .createdAt(System.currentTimeMillis()).build();
         return writable.save(appKey, newRes).map(v -> newRes);
     }
 
-    public Mono<Resource> create(String appKey, final Resource resource, Context context) {
+    private Mono<Resource> createResource(String appKey, final Resource resource, Context context) {
 
-        var id = Objects.isNull(resource.id()) ? UUID.randomUUID() : resource.id();
+        if (Objects.isNull(resource.id())) {
+            var r = resource
+                    .toBuilder()
+                    .id(UUID.randomUUID())
+                    .build();
+            return saveNewResource(appKey, r, context);
+        }
 
-        String eMess = String.format("Resource with ID %s is existing", id);
+        String eMess = String.format("Resource with ID %s is existing", resource.id());
 
-        return Executor.mono(() ->
-             readable
-                    .get(appKey, id)
-                    .flatMap(r -> Mono.<Resource>error(new ConflictError(eMess)))
-                    .doOnNext( r -> log.info("Resource already exists: {}", r))
-                    .switchIfEmpty(
-                            Mono.fromCallable(() -> resource.toBuilder().id(id).build())
-                                    .doOnNext( r -> log.info("Resource to be created: {}", r))
-                                    .flatMap(r -> createResource(appKey, r, context))
-                                    .doOnNext( v -> log.info("Resource created: {}", v)))
-        ).execute();
-
-
+        return getResource(appKey, resource.id())
+                .flatMap(r -> Mono.<Resource>error(new ConflictError(eMess)))
+                .doOnNext( r -> log.info("Resource already exists: {}", r))
+                .onErrorResume( throwable -> {
+                    if (throwable instanceof NotFoundError) {
+                        return saveNewResource(appKey, resource, context);
+                    }
+                    return Mono.error(throwable);
+                });
     }
 
-    public Mono<Void> save(String appKey, Resource resource, Context context) {
+    public Mono<Resource> create(String appKey, final Resource resource, Context context) {
+        return Executor
+                .mono(() -> createResource(appKey, resource, context))
+                .withLogger(log)
+                .execute();
+    }
+
+    private Mono<Void> saveResource(String appKey, Resource resource, Context context) {
         return getResource(appKey, resource.id())
                 .flatMap(r -> {
                     r = r.toBuilder()
@@ -88,7 +100,14 @@ public class ResourceService {
                 });
     }
 
-    public Mono<Void> patch(String appKey, UUID id, ResourceForPatch patcher, Context context) {
+    public Mono<Void> save(String appKey, Resource resource, Context context) {
+        return Executor
+                .mono(() -> saveResource(appKey, resource, context))
+                .withLogger(log)
+                .execute();
+    }
+
+    private Mono<Void> patchResource(String appKey, UUID id, ResourceForPatch patcher, Context context) {
 
         return getResource(appKey, id)
                 .flatMap(resource -> {
@@ -102,7 +121,17 @@ public class ResourceService {
                 });
     }
 
+    public Mono<Void> patch(String appKey, UUID id, ResourceForPatch patcher, Context context) {
+        return Executor
+                .mono(() -> patchResource(appKey, id, patcher, context))
+                .withLogger(log)
+                .execute();
+    }
+
     public Mono<Void> remove(String appKey, UUID id) {
-        return removable.remove(appKey, id);
+        return Executor
+                .mono(() -> removable.remove(appKey, id))
+                .withLogger(log)
+                .execute();
     }
 }

@@ -108,8 +108,8 @@ public class Executor<T> {
      * @param logger the logger to use for error reporting
      * @return this executor instance for method chaining
      */
-    public Executor<T> withLogger(Logger l) {
-        this.logger = l;
+    public Executor<T> withLogger(Logger logger) {
+        this.logger = logger;
         return this;
     }
 

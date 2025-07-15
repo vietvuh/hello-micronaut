@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @DisplayName("ResourceService Create method tests")
-public class ResourceServiceCreateTest {
+class ResourceServiceCreateTest {
 
     @Test
     void create_whenNoResource_newOneCreated() {
@@ -87,20 +87,14 @@ public class ResourceServiceCreateTest {
                 mocker
                         .forReadable(r -> Mockito.when(r.get(appKeyCaptor.capture(), uuidCaptor.capture())).thenReturn(Mono.empty()))
                         .withReadableVerifier(r -> {
-                            Mockito.verify(r, Mockito.only()).get(anyString(), any(UUID.class));
-                            var capturedAppKey = appKeyCaptor.getAllValues().getFirst();
-                            var capturedId = uuidCaptor.getAllValues().getFirst();
-                            assertEquals(capturedAppKey, appKey);
-                            assertNotNull(capturedId);
+                            Mockito.verify(r, Mockito.times(0)).get(anyString(), any(UUID.class));
                         }).forWritable( w -> Mockito.when(w.save(appKeyCaptor.capture(), resourceCaptor.capture())).thenReturn(Mono.just(vvu.centrauthz.models.Void.create())))
                         .withWritableVerifier( v -> {
                             Mockito.verify(v, Mockito.only()).save(anyString(), any(Resource.class));
-                            var capturedAppKey = appKeyCaptor.getAllValues().getLast();
+                            var capturedAppKey = appKeyCaptor.getAllValues().getFirst();
                             var capturedResource = resourceCaptor.getValue();
-                            var capturedId = uuidCaptor.getAllValues().getFirst();
                             assertEquals(capturedAppKey, appKey);
                             assertNotNull(capturedResource.id());
-                            assertEquals(capturedId, capturedResource.id());
                             assertEquals(capturedResource.createdBy(), user.id());
                         }).build();
 
