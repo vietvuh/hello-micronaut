@@ -1,28 +1,11 @@
 package vvu.centrauthz.domains.resources.services;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-import vvu.centrauthz.domains.resources.models.Resource;
-import vvu.centrauthz.domains.resources.models.User;
-import vvu.centrauthz.domains.resources.repositories.Readable;
-import vvu.centrauthz.domains.resources.repositories.Removable;
-import vvu.centrauthz.domains.resources.repositories.Writable;
-import vvu.centrauthz.exceptions.ConflictError;
-import vvu.centrauthz.exceptions.NotFoundError;
-import vvu.centrauthz.models.Void;
-import vvu.centrauthz.utilities.Context;
 
-import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 
 class ResourceServiceTest {
 

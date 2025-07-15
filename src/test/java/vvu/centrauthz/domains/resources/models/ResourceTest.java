@@ -17,6 +17,7 @@ class ResourceTest {
     class PatchMethodTests {
 
         private Resource createTestResource() {
+
             return Resource.builder()
                     .id(UUID.randomUUID())
                     .type("document")

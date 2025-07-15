@@ -1,11 +1,13 @@
 package vvu.centrauthz.domains.resources.models;
 
+import io.micronaut.json.tree.JsonNode;
 import lombok.Builder;
 import io.micronaut.serde.annotation.Serdeable;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -45,7 +47,7 @@ public record ResourceForPatch(
         List<String> tags,
         
         @Nullable
-        java.util.Map<String, Object> details
+        Map<String, Object> details
     ) {
     }
 }

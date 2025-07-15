@@ -1,4 +1,4 @@
-package vvu.centrauthz.domains.resources.models;
+package vvu.centrauthz.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

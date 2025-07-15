@@ -2,6 +2,7 @@ package vvu.centrauthz.domains.resources.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.micronaut.json.tree.JsonNode;
 import lombok.Builder;
 import io.micronaut.serde.annotation.Serdeable;
 import io.micronaut.core.annotation.Introspected;

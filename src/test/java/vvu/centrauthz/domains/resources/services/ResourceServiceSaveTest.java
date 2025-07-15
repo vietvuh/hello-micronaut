@@ -8,7 +8,7 @@ import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import vvu.centrauthz.domains.resources.models.Resource;
-import vvu.centrauthz.domains.resources.models.User;
+import vvu.centrauthz.models.User;
 import vvu.centrauthz.exceptions.EUtils;
 import vvu.centrauthz.exceptions.NotFoundError;
 import vvu.centrauthz.models.Void;

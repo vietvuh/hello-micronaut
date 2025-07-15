@@ -1,7 +1,7 @@
 package vvu.centrauthz.utilities;
 
 import lombok.Builder;
-import vvu.centrauthz.domains.resources.models.User;
+import vvu.centrauthz.models.User;
 
 import java.util.Objects;
 

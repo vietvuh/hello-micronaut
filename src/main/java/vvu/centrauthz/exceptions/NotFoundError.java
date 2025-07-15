@@ -1,6 +1,6 @@
 package vvu.centrauthz.exceptions;
 
-import vvu.centrauthz.domains.resources.models.Error;
+import vvu.centrauthz.models.Error;
 
 public class NotFoundError extends AppError {
     public NotFoundError(Error error) {

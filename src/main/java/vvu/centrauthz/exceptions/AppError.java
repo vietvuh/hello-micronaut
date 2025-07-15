@@ -1,7 +1,7 @@
 package vvu.centrauthz.exceptions;
 
 import lombok.Getter;
-import vvu.centrauthz.domains.resources.models.Error;
+import vvu.centrauthz.models.Error;
 
 /**
  * Application-specific error exception that carries an Error response.

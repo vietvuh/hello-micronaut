@@ -9,6 +9,7 @@ import io.micronaut.http.annotation.Error;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import vvu.centrauthz.exceptions.AppError;
+import vvu.centrauthz.exceptions.BadRequestError;
 import vvu.centrauthz.exceptions.ConflictError;
 import vvu.centrauthz.exceptions.NotFoundError;
 
@@ -20,11 +21,11 @@ import vvu.centrauthz.exceptions.NotFoundError;
 public class GlobalExceptionHandler {
 
     @Error(global = true)
-    public Mono<HttpResponse<vvu.centrauthz.domains.resources.models.Error>> handleException(HttpRequest<?> request, Exception exception) {
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, Exception exception) {
         log.error("Unhandled exception occurred", exception);
         return Mono.just(
                 HttpResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(vvu.centrauthz.domains.resources.models.Error.builder()
+                        .body(vvu.centrauthz.models.Error.builder()
                                 .code("INTERNAL_SERVER_ERROR")
                                 .message(exception.getMessage())
                                 .build())
@@ -32,11 +33,11 @@ public class GlobalExceptionHandler {
     }
 
     @Error(global = true)
-    public Mono<HttpResponse<vvu.centrauthz.domains.resources.models.Error>> handleException(HttpRequest<?> request, ConversionErrorException exception) {
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, ConversionErrorException exception) {
         log.error("ConversionErrorException: {}", exception.getMessage(), exception);
         return Mono.just(
                 HttpResponse.status(HttpStatus.BAD_REQUEST)
-                        .body(vvu.centrauthz.domains.resources.models.Error.builder()
+                        .body(vvu.centrauthz.models.Error.builder()
                                 .code("BAD_REQUEST")
                                 .message(exception.getMessage())
                                 .build())
@@ -44,7 +45,7 @@ public class GlobalExceptionHandler {
     }
 
     @Error(global = true)
-    public Mono<HttpResponse<vvu.centrauthz.domains.resources.models.Error>> handleException(HttpRequest<?> request, AppError exception) {
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, AppError exception) {
         log.error("AppError: {}", exception.toString(), exception);
 
         if (exception instanceof NotFoundError) {
@@ -57,6 +58,13 @@ public class GlobalExceptionHandler {
         if (exception instanceof ConflictError) {
             return Mono.just(
                     HttpResponse.status(HttpStatus.CONFLICT)
+                            .body(exception.getError())
+            );
+        }
+
+        if (exception instanceof BadRequestError) {
+            return Mono.just(
+                    HttpResponse.status(HttpStatus.BAD_REQUEST)
                             .body(exception.getError())
             );
         }

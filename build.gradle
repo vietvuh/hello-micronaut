@@ -4,6 +4,7 @@ plugins {
     id("io.micronaut.aot") version "4.5.4"
 }
 
+
 version = "0.1"
 group = "vvu.centrauthz"
 
@@ -29,6 +30,10 @@ dependencies {
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("io.projectreactor:reactor-test:3.8.0-M4")
     testImplementation("org.mockito:mockito-core:5.18.0")
+    testImplementation("io.micronaut.serde:micronaut-serde-api")
+    testImplementation("io.micronaut.serde:micronaut-serde-jackson")
+    annotationProcessor("io.micronaut.validation:micronaut-validation")
+    annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
 }
 
 application {

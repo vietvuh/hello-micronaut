@@ -3,13 +3,13 @@ package vvu.centrauthz.domains.resources.controllers;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
+import jakarta.validation.Valid;
 import reactor.core.publisher.Mono;
 import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.domains.resources.models.ResourceForPatch;
 import vvu.centrauthz.domains.resources.services.ResourceService;
 import vvu.centrauthz.utilities.Context;
 import vvu.centrauthz.exceptions.BadRequestError;
-
 import java.util.Objects;
 import java.util.UUID;
 
@@ -22,8 +22,10 @@ import java.util.UUID;
 public class ResourceController {
 
     private final ResourceService service;
+    private final ResourceValidator validator;
 
-    public ResourceController(ResourceService service) {
+    public ResourceController(ResourceService service, ResourceValidator validator) {
+        this.validator = validator;
         this.service = service;
     }
 
@@ -54,17 +56,16 @@ public class ResourceController {
     public Mono<HttpResponse<Resource>> updateResource(
             @PathVariable @NonNull String applicationKey,
             @PathVariable @NonNull UUID id,
-            @Body @NonNull Resource resource) {
+            @Body @Valid @NonNull Resource resource) {
 
-        if (Objects.isNull(resource.id())) {
-            resource = resource.toBuilder().id(id).build();
-        }
-
-        if (!resource.id().equals(id)) {
+        if (Objects.nonNull(resource.id()) && !resource.id().equals(id)) {
             return Mono.error(new BadRequestError("INVALID_ID", "Resource ID in path does not match resource ID in body"));
         }
 
-        return service.save(applicationKey, resource, Context.builder().build()).map(v -> HttpResponse.noContent());
+        return validator.validate(resource)
+                .map(r -> r.toBuilder().id(id).build())
+                .flatMap(r -> service.save(applicationKey, r, Context.builder().build()))
+                .map( v -> HttpResponse.noContent());
     }
 
     /**
@@ -81,7 +82,9 @@ public class ResourceController {
             @PathVariable @NonNull UUID id,
             @Body @NonNull ResourceForPatch resourcePatch) {
 
-        return service.patch(applicationKey, id, resourcePatch, Context.builder().build()).map(v -> HttpResponse.noContent());
+        return  validator.validate(resourcePatch)
+                .flatMap(patcher -> service.patch(applicationKey, id, patcher, Context.builder().build()))
+                .map( v -> HttpResponse.noContent());
     }
 
     /**
@@ -110,8 +113,8 @@ public class ResourceController {
     public Mono<HttpResponse<Resource>> createResource(
             @PathVariable @NonNull String applicationKey,
             @Body @NonNull Resource resource) {
-        return service
-                .create(applicationKey, resource, Context.builder().build())
+        return validator.validate(resource).flatMap(r -> service
+                        .create(applicationKey, r, Context.builder().build()))
                 .map(HttpResponse::created);
     }
 }
