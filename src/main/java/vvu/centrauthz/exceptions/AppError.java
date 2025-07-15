@@ -1,10 +1,12 @@
 package vvu.centrauthz.exceptions;
 
+import lombok.Getter;
 import vvu.centrauthz.domains.resources.models.Error;
 
 /**
  * Application-specific error exception that carries an Error response.
  */
+@Getter
 public class AppError extends RuntimeException {
     private final Error error;
 
@@ -19,10 +21,6 @@ public class AppError extends RuntimeException {
                 .code(code)
                 .message(message)
                 .build();
-    }
-
-    public Error getError() {
-        return error;
     }
 
     @Override
