@@ -23,17 +23,4 @@ class ResourceServiceTest {
         assertEquals(eMess, e.message());
         assertNull(e.details());
     }
-
-    @Test
-    void save() {
-
-    }
-
-    @Test
-    void patch() {
-    }
-
-    @Test
-    void remove() {
-    }
 }

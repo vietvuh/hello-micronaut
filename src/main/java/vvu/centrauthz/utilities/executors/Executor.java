@@ -2,6 +2,7 @@ package vvu.centrauthz.utilities.executors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
+import vvu.centrauthz.utilities.Context;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -35,6 +36,7 @@ public class Executor<T> {
     protected Supplier<T> supplier;
     protected Function<Throwable, T> whenError;
     protected Logger logger;
+    protected Context context;
 
     /**
      * Creates a new Executor with the specified operation and error handler.
@@ -113,4 +115,8 @@ public class Executor<T> {
         return this;
     }
 
+    public Executor<T> withContext(Context context) {
+        this.context = context;
+        return this;
+    }
 }

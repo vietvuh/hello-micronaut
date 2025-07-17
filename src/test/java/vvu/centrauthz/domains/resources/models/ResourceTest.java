@@ -1,8 +1,12 @@
 package vvu.centrauthz.domains.resources.models;
 
+import io.micronaut.json.JsonMapper;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import vvu.centrauthz.utilities.JsonTools;
 
 import java.util.List;
 import java.util.Map;
@@ -10,13 +14,20 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@MicronautTest
 class ResourceTest {
+
+    @Inject
+    JsonMapper jsonMapper;
 
     @Nested
     @DisplayName("patch method tests")
     class PatchMethodTests {
 
         private Resource createTestResource() {
+
+            var map = Map.of("key1", "value1", "key2", "value2");
+            var node = JsonTools.jsonContext(() -> jsonMapper.writeValueToTree(map));
 
             return Resource.builder()
                     .id(UUID.randomUUID())
@@ -25,7 +36,7 @@ class ResourceTest {
                     .parentId(UUID.randomUUID())
                     .sharedWith(List.of(UUID.randomUUID(), UUID.randomUUID()))
                     .tags(List.of("tag1", "tag2"))
-                    .details(Map.of("key1", "value1", "key2", "value2"))
+                    .details(node)
                     .createdAt(System.currentTimeMillis())
                     .createdBy(UUID.randomUUID())
                     .updatedAt(System.currentTimeMillis())
@@ -158,10 +169,11 @@ class ResourceTest {
         void shouldPatchDetailsWhenUpdatedFieldsContainsDetails() {
             // Given
             Resource originalResource = createTestResource();
-            Map<String, Object> newDetails = Map.of("newKey1", "newValue1", "newKey2", 42);
+            Map<String, Object> newDetails = Map.of("newKey1", "newValue1", "newKey2", 42);;
+            var node = JsonTools.jsonContext(() -> jsonMapper.writeValueToTree(newDetails));
             
             ResourceForPatch.ResourcePatchData patchData = ResourceForPatch.ResourcePatchData.builder()
-                    .details(newDetails)
+                    .details(node)
                     .build();
             
             ResourceForPatch patch = ResourceForPatch.builder()
@@ -171,9 +183,11 @@ class ResourceTest {
 
             // When
             Resource patchedResource = originalResource.patch(patch);
+            String detailsSValue = JsonTools.jsonContext(() -> jsonMapper.writeValueAsString(node));
+            String patchedDetailsSValue = JsonTools.jsonContext(() -> jsonMapper.writeValueAsString(patchedResource.details()));
 
             // Then
-            assertEquals(newDetails, patchedResource.details());
+            assertEquals(detailsSValue, patchedDetailsSValue);
             // Verify other fields remain unchanged
             assertEquals(originalResource.id(), patchedResource.id());
             assertEquals(originalResource.type(), patchedResource.type());
@@ -191,11 +205,12 @@ class ResourceTest {
             UUID newOwnerId = UUID.randomUUID();
             List<String> newTags = List.of("multiPatchTag1", "multiPatchTag2");
             Map<String, Object> newDetails = Map.of("multiPatchKey", "multiPatchValue");
+            var node = JsonTools.jsonContext(() -> jsonMapper.writeValueToTree(newDetails));
             
             ResourceForPatch.ResourcePatchData patchData = ResourceForPatch.ResourcePatchData.builder()
                     .ownerId(newOwnerId)
                     .tags(newTags)
-                    .details(newDetails)
+                    .details(node)
                     .build();
             
             ResourceForPatch patch = ResourceForPatch.builder()
@@ -205,11 +220,13 @@ class ResourceTest {
 
             // When
             Resource patchedResource = originalResource.patch(patch);
+            String detailsSValue = JsonTools.jsonContext(() -> jsonMapper.writeValueAsString(node));
+            String patchedDetailsSValue = JsonTools.jsonContext(() -> jsonMapper.writeValueAsString(patchedResource.details()));
 
             // Then
             assertEquals(newOwnerId, patchedResource.ownerId());
             assertEquals(newTags, patchedResource.tags());
-            assertEquals(newDetails, patchedResource.details());
+            assertEquals(detailsSValue, patchedDetailsSValue);
             // Verify unchanged fields
             assertEquals(originalResource.id(), patchedResource.id());
             assertEquals(originalResource.type(), patchedResource.type());
@@ -222,13 +239,13 @@ class ResourceTest {
         void shouldNotPatchAnyFieldsWhenUpdatedFieldsIsEmpty() {
             // Given
             Resource originalResource = createTestResource();
-            
+            var node = JsonTools.jsonContext(() -> jsonMapper.writeValueToTree(Map.of("shouldNotApply", "value")));
             ResourceForPatch.ResourcePatchData patchData = ResourceForPatch.ResourcePatchData.builder()
                     .ownerId(UUID.randomUUID())
                     .parentId(UUID.randomUUID())
                     .sharedWith(List.of(UUID.randomUUID()))
                     .tags(List.of("shouldNotApply"))
-                    .details(Map.of("shouldNotApply", "value"))
+                    .details(node)
                     .build();
             
             ResourceForPatch patch = ResourceForPatch.builder()

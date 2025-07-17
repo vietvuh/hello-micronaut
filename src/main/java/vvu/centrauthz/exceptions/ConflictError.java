@@ -10,6 +10,6 @@ public class ConflictError extends AppError {
     }
 
     public ConflictError() {
-        super("CONFLICT", null);
+        super("CONFLICT");
     }
 }

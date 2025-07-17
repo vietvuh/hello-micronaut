@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.domains.resources.models.ResourceForPatch;
-import vvu.centrauthz.domains.resources.repositories.Readable;
-import vvu.centrauthz.domains.resources.repositories.Removable;
-import vvu.centrauthz.domains.resources.repositories.Writable;
+import vvu.centrauthz.domains.resources.repositories.ResourceReadable;
+import vvu.centrauthz.domains.resources.repositories.ResourceRemovable;
+import vvu.centrauthz.domains.resources.repositories.ResourceWritable;
 import vvu.centrauthz.exceptions.ConflictError;
 import vvu.centrauthz.exceptions.EUtils;
 import vvu.centrauthz.exceptions.NotFoundError;
@@ -23,17 +23,17 @@ import java.util.UUID;
 @Slf4j
 public class ResourceService {
 
-    private final Readable readable;
-    private final Writable writable;
-    private final Removable removable;
+    private final ResourceReadable resourceReadable;
+    private final ResourceWritable resourceWritable;
+    private final ResourceRemovable resourceRemovable;
 
     public ResourceService(
-            Readable readable,
-            Writable writable,
-            Removable removable) {
-        this.readable = Objects.requireNonNull(readable);
-        this.writable = Objects.requireNonNull(writable);
-        this.removable = Objects.requireNonNull(removable);
+            ResourceReadable resourceReadable,
+            ResourceWritable resourceWritable,
+            ResourceRemovable resourceRemovable) {
+        this.resourceReadable = Objects.requireNonNull(resourceReadable);
+        this.resourceWritable = Objects.requireNonNull(resourceWritable);
+        this.resourceRemovable = Objects.requireNonNull(resourceRemovable);
     }
 
     static NotFoundError resourceNotFound(String appKey, UUID id) {
@@ -42,13 +42,16 @@ public class ResourceService {
     }
 
     private Mono<Resource> getResource(String appKey, UUID id) {
-        return readable
+        return resourceReadable
                 .get(appKey, id)
                 .switchIfEmpty(Mono.error(resourceNotFound(appKey, id)));
     }
 
-    public Mono<Resource> get(String appKey, UUID id) {
-        return Executor.mono(() -> getResource(appKey, id)).withLogger(log).execute();
+    public Mono<Resource> get(String appKey, UUID id, Context context) {
+        return Executor.mono(() -> getResource(appKey, id))
+            .withLogger(log)
+            .withContext(context)
+            .execute();
     }
 
     private Mono<Resource> saveNewResource(String appKey, Resource resource, Context context) {
@@ -56,7 +59,7 @@ public class ResourceService {
                 .toBuilder()
                 .createdBy(context.user().id())
                 .createdAt(System.currentTimeMillis()).build();
-        return writable.save(appKey, newRes).map(v -> newRes);
+        return resourceWritable.save(appKey, newRes).map(v -> newRes);
     }
 
     private Mono<Resource> createResource(String appKey, final Resource resource, Context context) {
@@ -86,6 +89,7 @@ public class ResourceService {
         return Executor
                 .mono(() -> createResource(appKey, resource, context))
                 .withLogger(log)
+                .withContext(context)
                 .execute();
     }
 
@@ -96,7 +100,7 @@ public class ResourceService {
                             .updatedBy(context.user().id())
                             .updatedAt(System.currentTimeMillis())
                             .build();
-                    return writable.save(appKey, r);
+                    return resourceWritable.save(appKey, r);
                 });
     }
 
@@ -104,6 +108,7 @@ public class ResourceService {
         return Executor
                 .mono(() -> saveResource(appKey, resource, context))
                 .withLogger(log)
+                .withContext(context)
                 .execute();
     }
 
@@ -117,7 +122,7 @@ public class ResourceService {
                             .updatedBy(context.user().id())
                             .updatedAt(System.currentTimeMillis())
                             .build();
-                    return writable.save(appKey, patchedResource);
+                    return resourceWritable.save(appKey, patchedResource);
                 });
     }
 
@@ -125,13 +130,15 @@ public class ResourceService {
         return Executor
                 .mono(() -> patchResource(appKey, id, patcher, context))
                 .withLogger(log)
+                .withContext(context)
                 .execute();
     }
 
-    public Mono<Void> remove(String appKey, UUID id) {
+    public Mono<Void> remove(String appKey, UUID id, Context context) {
         return Executor
-                .mono(() -> removable.remove(appKey, id))
+                .mono(() -> resourceRemovable.remove(appKey, id))
                 .withLogger(log)
+                .withContext(context)
                 .execute();
     }
 }

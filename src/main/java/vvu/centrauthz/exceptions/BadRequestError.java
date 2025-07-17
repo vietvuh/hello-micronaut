@@ -16,6 +16,6 @@ public class BadRequestError extends AppError {
     }
 
     public BadRequestError() {
-        super("BAD_REQUEST", null);
+        super("BAD_REQUEST");
     }
 }

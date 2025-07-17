@@ -2,3 +2,7 @@
 micronaut:
   application:
     name: resources
+  validation:
+    enabled: true
+  server:
+    port: 3000

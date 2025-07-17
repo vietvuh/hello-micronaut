@@ -4,7 +4,7 @@ import reactor.core.publisher.Mono;
 import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.models.Void;
 
-public interface Writable {
+public interface ResourceWritable {
     /**
      * Saves a resource to the repository.
      *

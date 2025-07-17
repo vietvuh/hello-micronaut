@@ -6,10 +6,10 @@ import io.micronaut.json.tree.JsonNode;
 import lombok.Builder;
 import io.micronaut.serde.annotation.Serdeable;
 import io.micronaut.core.annotation.Introspected;
-import io.micronaut.core.annotation.NonNull;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import io.micronaut.core.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -24,13 +24,15 @@ import java.util.UUID;
 public record Resource(
     UUID id,
 
-    @NonNull
+    @NotNull(message = "Application key is required")
+    @NotBlank(message = "Application key cannot be blank")
     String applicationKey,
-    
-    @NonNull
+
+    @NotNull(message = "Type is required")
+    @NotBlank(message = "Type cannot be blank")
     String type,
-    
-    @NonNull
+
+    @NotNull(message = "Owner ID is required")
     UUID ownerId,
     
     @Nullable
@@ -43,7 +45,7 @@ public record Resource(
     List<String> tags,
     
     @Nullable
-    Map<String, Object> details,
+    JsonNode details,
 
     @Nullable
     Long createdAt,

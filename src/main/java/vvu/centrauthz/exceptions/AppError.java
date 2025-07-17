@@ -15,6 +15,21 @@ public class AppError extends RuntimeException {
         this.error = error;
     }
 
+    public AppError(String code) {
+        super(code);
+        this.error = Error.builder()
+            .code(code)
+            .build();
+    }
+
+    public AppError(String code, Throwable e) {
+        super(e);
+        this.error = Error.builder()
+            .code(code)
+            .message(e.getMessage())
+            .build();
+    }
+
     public AppError(String code, String message) {
         super(message);
         this.error = Error.builder()

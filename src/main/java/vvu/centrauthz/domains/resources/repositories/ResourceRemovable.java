@@ -5,7 +5,7 @@ import vvu.centrauthz.models.Void;
 
 import java.util.UUID;
 
-public interface Removable {
+public interface ResourceRemovable {
 
     /**
      * Deletes a resource from the repository.

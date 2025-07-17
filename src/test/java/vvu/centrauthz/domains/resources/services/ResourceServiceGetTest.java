@@ -1,22 +1,17 @@
 package vvu.centrauthz.domains.resources.services;
 
 import org.junit.jupiter.api.*;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import vvu.centrauthz.domains.resources.models.Resource;
-import vvu.centrauthz.domains.resources.repositories.Readable;
-import vvu.centrauthz.domains.resources.repositories.Writable;
-import vvu.centrauthz.domains.resources.repositories.Removable;
 import vvu.centrauthz.exceptions.NotFoundError;
+import vvu.centrauthz.utilities.Context;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @DisplayName("ResourceService get method tests")
 class ResourceServiceGetTest {
@@ -26,6 +21,7 @@ class ResourceServiceGetTest {
         var expectedResource = Resource.builder().build();
         var appKey = UUID.randomUUID().toString().split("-")[0];
         var id = UUID.randomUUID();
+        var context = Context.from(UUID.randomUUID(), appKey);
         var mocker = ResourceServiceMocker.create();
         var resourceService = mocker
                 .forReadable(r -> Mockito.when(r.get(appKey, id)).thenReturn(Mono.just(expectedResource)))
@@ -35,7 +31,7 @@ class ResourceServiceGetTest {
                 .build();
 
         // When & Then
-        StepVerifier.create(resourceService.get(appKey, id))
+        StepVerifier.create(resourceService.get(appKey, id, context))
                 .expectNext(expectedResource)
                 .verifyComplete();
         mocker.verify();
@@ -46,6 +42,7 @@ class ResourceServiceGetTest {
         var appKey = UUID.randomUUID().toString().split("-")[0];
         var id = UUID.randomUUID();
         var mocker = ResourceServiceMocker.create();
+        var context = Context.from(UUID.randomUUID(), appKey);
         var resourceService = mocker
                 .forReadable(r -> Mockito.when(r.get(appKey, id)).thenReturn(Mono.empty()))
                 .withReadableVerifier(r -> {
@@ -54,7 +51,7 @@ class ResourceServiceGetTest {
                 .build();
 
         // When & Then
-        StepVerifier.create(resourceService.get(appKey, id))
+        StepVerifier.create(resourceService.get(appKey, id, context))
                 .expectErrorSatisfies(e -> {
                     Assertions.assertInstanceOf(NotFoundError.class, e);
                     var error = ((NotFoundError) e).getError();
@@ -72,6 +69,8 @@ class ResourceServiceGetTest {
         var id = UUID.randomUUID();
         var theError = new RuntimeException();
         var mocker = ResourceServiceMocker.create();
+        var context = Context.from(UUID.randomUUID(), appKey);
+
         var resourceService = mocker
                 .forReadable(r -> Mockito.when(r.get(appKey, id)).thenThrow(theError))
                 .withReadableVerifier(r -> {
@@ -79,7 +78,7 @@ class ResourceServiceGetTest {
                 })
                 .build();
 
-        StepVerifier.create(resourceService.get(appKey, id))
+        StepVerifier.create(resourceService.get(appKey, id, context))
                 .expectErrorSatisfies(e -> {
                     Assertions.assertInstanceOf(RuntimeException.class, e);
                     Assertions.assertSame(theError, e);
@@ -94,6 +93,7 @@ class ResourceServiceGetTest {
         var id = UUID.randomUUID();
         var theError = new RuntimeException();
         var mocker = ResourceServiceMocker.create();
+        var context = Context.from(UUID.randomUUID(), appKey);
         var resourceService = mocker
                 .forReadable(r -> Mockito.when(r.get(appKey, id)).thenReturn(Mono.error(theError)))
                 .withReadableVerifier(r -> {
@@ -101,7 +101,7 @@ class ResourceServiceGetTest {
                 })
                 .build();
 
-        StepVerifier.create(resourceService.get(appKey, id))
+        StepVerifier.create(resourceService.get(appKey, id, context))
                 .expectErrorSatisfies(e -> {
                     Assertions.assertInstanceOf(RuntimeException.class, e);
                     Assertions.assertSame(theError, e);
