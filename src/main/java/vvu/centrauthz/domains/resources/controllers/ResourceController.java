@@ -1,6 +1,7 @@
 package vvu.centrauthz.domains.resources.controllers;
 
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import jakarta.validation.Valid;
@@ -8,7 +9,6 @@ import reactor.core.publisher.Mono;
 import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.domains.resources.models.ResourceForPatch;
 import vvu.centrauthz.domains.resources.services.ResourceService;
-import vvu.centrauthz.models.User;
 import vvu.centrauthz.utilities.ConstantValues;
 import vvu.centrauthz.utilities.Context;
 import vvu.centrauthz.exceptions.BadRequestError;
@@ -38,7 +38,7 @@ public class ResourceController {
      */
     @Get("/{id}")
     public Mono<HttpResponse<Resource>> getResource(
-            @Header(ConstantValues.X_USER_ID_HEADER) UUID userId,
+            @Header(ConstantValues.X_USER_ID_HEADER) @Nullable UUID userId,
             @PathVariable @NonNull String applicationKey,
             @PathVariable @NonNull UUID id) {
 
@@ -59,7 +59,7 @@ public class ResourceController {
      */
     @Put("/{id}")
     public Mono<HttpResponse<Resource>> updateResource(
-            @Header(ConstantValues.X_USER_ID_HEADER) UUID userId,
+            @Header(ConstantValues.X_USER_ID_HEADER) @Nullable UUID userId,
             @PathVariable @NonNull String applicationKey,
             @PathVariable @NonNull UUID id,
             @Body @Valid @NonNull Resource resource) {
@@ -86,7 +86,7 @@ public class ResourceController {
      */
     @Patch("/{id}")
     public Mono<HttpResponse<Resource>> patchResource(
-            @Header(ConstantValues.X_USER_ID_HEADER) UUID userId,
+            @Header(ConstantValues.X_USER_ID_HEADER) @Nullable UUID userId,
             @PathVariable @NonNull String applicationKey,
             @PathVariable @NonNull UUID id,
             @Body @Valid @NonNull ResourceForPatch resourcePatch) {
@@ -105,7 +105,7 @@ public class ResourceController {
      */
     @Delete("/{id}")
     public Mono<HttpResponse<Void>> deleteResource(
-            @Header(ConstantValues.X_USER_ID_HEADER) UUID userId,
+            @Header(ConstantValues.X_USER_ID_HEADER) @Nullable UUID userId,
             @PathVariable @NonNull String applicationKey,
             @PathVariable @NonNull UUID id) {
 
@@ -121,7 +121,7 @@ public class ResourceController {
      */
     @Post
     public Mono<HttpResponse<Resource>> createResource(
-            @Header(ConstantValues.X_USER_ID_HEADER) UUID userId,
+            @Header(ConstantValues.X_USER_ID_HEADER) @Nullable UUID userId,
             @PathVariable @NonNull String applicationKey,
             @Body @Valid @NonNull Resource resource) {
         return Mono.just(resource)

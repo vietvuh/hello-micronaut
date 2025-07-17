@@ -6,3 +6,17 @@ micronaut:
     enabled: true
   server:
     port: 3000
+redis:
+  uri: ${REDIS_URI:redis://localhost}
+  ssl: ${REDIS_SSL:false}
+  namespace: 'centrauthz:resources'
+  codec: string-json
+  io-thread-pool-size: 5
+  computation-thread-pool-size: 4
+  pool:
+    enabled: true
+    max-active: 10
+    max-idle: 5
+    min-idle: 3
+    max-wait: 2000ms
+  timeout: 1000ms

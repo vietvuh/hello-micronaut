@@ -1,6 +1,5 @@
 package vvu.centrauthz.domains.resources.storages;
 
-import io.micronaut.context.annotation.Value;
 import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
 import jakarta.inject.Singleton;
@@ -16,40 +15,29 @@ import vvu.centrauthz.storages.interfaces.Readable;
 import vvu.centrauthz.storages.interfaces.Removable;
 import vvu.centrauthz.storages.interfaces.Writable;
 import vvu.centrauthz.utilities.JsonTools;
-
-import java.io.IOException;
-import java.util.Objects;
 import java.util.UUID;
 
 @Singleton
 public class ResourceStorage implements ResourceReadable, ResourceRemovable, ResourceWritable {
 
-    private final String prefix;
     private final Readable<JsonNode> readable;
     private final Writable<JsonNode> writable;
     private final Removable removable;
     private final JsonMapper jsonMapper;
 
-    static String buildKey(String prefix, String appKey, UUID id) {
-        if (Objects.isNull(prefix) || prefix.isBlank()) {
-            prefix = "RES";
-        }
-
-        return String.format("%s:%s:%s", prefix, appKey, id);
+    static String buildKey(String appKey, UUID id) {
+        return String.format("%s:%s", appKey, id);
 
     }
 
-    static NotFoundError createNotFoundError(String prefix, String appKey, UUID id) {
-        return EUtils.createNotFoundError(buildKey(prefix, appKey, id));
+    static NotFoundError createNotFoundError(String appKey, UUID id) {
+        return EUtils.createNotFoundError(buildKey(appKey, id));
     }
 
-    public ResourceStorage(@Value("${app.storage.namespace:RES}") String prefix,
-                           JsonMapper jsonMapper,
+    public ResourceStorage(JsonMapper jsonMapper,
                            Readable<JsonNode> readable,
                            Writable<JsonNode> writable,
                            Removable removable) {
-
-        this.prefix = prefix;
         this.readable = readable;
         this.writable = writable;
         this.removable = removable;
@@ -65,7 +53,7 @@ public class ResourceStorage implements ResourceReadable, ResourceRemovable, Res
      */
     @Override
     public Mono<Void> remove(String appKey, UUID id) {
-        return removable.remove(buildKey(prefix, appKey, id));
+        return removable.remove(buildKey(appKey, id));
     }
 
     /**
@@ -78,13 +66,13 @@ public class ResourceStorage implements ResourceReadable, ResourceRemovable, Res
     @Override
     public Mono<Void> save(String appKey, Resource resource) {
         var data = JsonTools.toJson(jsonMapper, resource);
-        return writable.save(buildKey(prefix, appKey, resource.id()), data);
+        return writable.save(buildKey(appKey, resource.id()), data);
     }
 
     @Override
     public Mono<Resource> get(String appKey, UUID id) {
         return readable
-            .get(buildKey(prefix, appKey, id))
+            .get(buildKey(appKey, id))
             .map( node -> JsonTools.toValue(jsonMapper,node, Resource.class));
     }
 }

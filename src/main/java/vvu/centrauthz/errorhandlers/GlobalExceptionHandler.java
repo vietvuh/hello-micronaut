@@ -6,6 +6,7 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Error;
+import io.micronaut.web.router.exceptions.UnsatisfiedHeaderRouteException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -44,6 +45,19 @@ public class GlobalExceptionHandler {
         return Mono.just(
             HttpResponse.status(HttpStatus.BAD_REQUEST)
                 .body(error));
+    }
+
+    // UnsatisfiedHeaderRouteException
+    @Error(global = true)
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, UnsatisfiedHeaderRouteException exception) {
+        log.error("ConversionErrorException: {}", exception.getMessage(), exception);
+        return Mono.just(
+                HttpResponse.status(HttpStatus.BAD_REQUEST)
+                        .body(vvu.centrauthz.models.Error.builder()
+                                .code("BAD_REQUEST")
+                                .message(exception.getMessage())
+                                .build())
+        );
     }
 
     @Error(global = true)
