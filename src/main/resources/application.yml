@@ -10,7 +10,7 @@ redis:
   uri: ${REDIS_URI:redis://localhost:6379}
   ssl: ${REDIS_SSL:false}
   namespace: 'centrauthz:resources'
-  codec: string-json
+  codec: string
   io-thread-pool-size: 5
   computation-thread-pool-size: 4
   pool:

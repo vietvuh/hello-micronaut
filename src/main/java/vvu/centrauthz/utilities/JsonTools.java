@@ -29,4 +29,12 @@ public class JsonTools {
         return jsonContext(() -> mapper.readValueFromTree(node, clazz));
     }
 
+    public static String toString(JsonMapper mapper, JsonNode object) {
+        return jsonContext(() -> mapper.writeValueAsString(object));
+    }
+
+    public static JsonNode fromString(JsonMapper mapper, String object) {
+        return jsonContext(() -> mapper.readValue(object, JsonNode.class));
+    }
+
 }

@@ -6,6 +6,7 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Error;
+import io.micronaut.json.JsonSyntaxException;
 import io.micronaut.web.router.exceptions.UnsatisfiedHeaderRouteException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,19 @@ public class GlobalExceptionHandler {
         return Mono.just(
             HttpResponse.status(HttpStatus.BAD_REQUEST)
                 .body(error));
+    }
+
+    @Error(global = true)
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, JsonSyntaxException exception) {
+
+        var error = vvu.centrauthz.models.Error.builder()
+                .code("JSON_BODY_ERROR")
+                .message(exception.getMessage())
+                .build();
+
+        return Mono.just(
+                HttpResponse.status(HttpStatus.BAD_REQUEST)
+                        .body(error));
     }
 
     // UnsatisfiedHeaderRouteException
