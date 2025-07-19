@@ -7,7 +7,7 @@ micronaut:
   server:
     port: 3000
 redis:
-  uri: ${REDIS_URI:redis://localhost}
+  uri: ${REDIS_URI:redis://localhost:6379}
   ssl: ${REDIS_SSL:false}
   namespace: 'centrauthz:resources'
   codec: string-json
