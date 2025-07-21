@@ -3,7 +3,6 @@ package vvu.centrauthz.utilities;
 import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
 import vvu.centrauthz.exceptions.IllegalJsonValue;
-
 import java.io.IOException;
 
 public class JsonTools {
@@ -18,7 +17,6 @@ public class JsonTools {
         } catch (IOException e) {
             throw new IllegalJsonValue(e);
         }
-
     }
 
     public static <T> JsonNode toJson(JsonMapper mapper, T object) {
@@ -37,4 +35,11 @@ public class JsonTools {
         return jsonContext(() -> mapper.readValue(object, JsonNode.class));
     }
 
+    public static byte[] toBytes(JsonMapper mapper, JsonNode object) {
+        return jsonContext(() -> mapper.writeValueAsBytes(object));
+    }
+
+    public static JsonNode fromBytes(JsonMapper mapper, byte[] object) {
+        return jsonContext(() -> mapper.readValue(object, JsonNode.class));
+    }
 }

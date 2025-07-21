@@ -28,6 +28,7 @@ dependencies {
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("org.apache.commons:commons-lang3:3.18.0")
     implementation("io.micronaut.redis:micronaut-redis-lettuce")
+    implementation("io.micronaut:micronaut-management")
 
     // Compile-only dependencies
     compileOnly("io.micronaut:micronaut-http-client")

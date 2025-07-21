@@ -10,7 +10,7 @@ redis:
   uri: ${REDIS_URI:redis://localhost:6379}
   ssl: ${REDIS_SSL:false}
   namespace: 'centrauthz:resources'
-  codec: string
+  codec: byte-array
   io-thread-pool-size: 5
   computation-thread-pool-size: 4
   pool:
@@ -20,3 +20,8 @@ redis:
     min-idle: 3
     max-wait: 2000ms
   timeout: 1000ms
+endpoints:
+  health:
+    enabled: true
+    sensitive: false  # Allow access without authentication
+    details-visible: ANONYMOUS  # Show health details to everyone

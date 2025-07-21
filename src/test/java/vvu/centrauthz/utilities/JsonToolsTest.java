@@ -9,7 +9,6 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@MicronautTest
+@MicronautTest(startApplication = false)
 class JsonToolsTest {
 
     @Inject
@@ -122,6 +121,35 @@ class JsonToolsTest {
         assertEquals(outRes.ownerId(), resource.ownerId());
         assertEquals(outRes.createdAt(), resource.createdAt());
         assertEquals(outRes.createdBy(), resource.createdBy());
+
+    }
+
+    @Test
+    void toBytes() {
+        TestRes res = new TestRes(
+                UUID.randomUUID().toString().split("-")[0],
+                Map.of("key1", UUID.randomUUID(), "key2", UUID.randomUUID()));
+        var sub = JsonTools.toJson(jsonMapper, res);
+
+        Resource resource = Resource.builder()
+                .id(UUID.randomUUID())
+                .type("RESOURCE")
+                .applicationKey(UUID.randomUUID().toString().split("-")[0])
+                .details(sub)
+                .ownerId(UUID.randomUUID())
+                .createdAt(System.currentTimeMillis())
+                .createdBy(UUID.randomUUID())
+                .build();
+
+        var json = JsonTools.toJson(jsonMapper, resource);
+
+        var bytes = JsonTools.toBytes(jsonMapper, json);
+        var fromBytes = JsonTools.fromBytes(jsonMapper, bytes);
+
+        var sSrcValue = JsonTools.toString(jsonMapper, json);
+        var sFromBytesValue = JsonTools.toString(jsonMapper, fromBytes);
+
+        assertEquals(sSrcValue, sFromBytesValue);
 
     }
 }

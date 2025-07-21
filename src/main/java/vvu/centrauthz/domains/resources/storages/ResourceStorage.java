@@ -8,8 +8,6 @@ import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.domains.resources.repositories.ResourceReadable;
 import vvu.centrauthz.domains.resources.repositories.ResourceRemovable;
 import vvu.centrauthz.domains.resources.repositories.ResourceWritable;
-import vvu.centrauthz.exceptions.EUtils;
-import vvu.centrauthz.exceptions.NotFoundError;
 import vvu.centrauthz.models.Void;
 import vvu.centrauthz.storages.interfaces.Readable;
 import vvu.centrauthz.storages.interfaces.Removable;
@@ -28,10 +26,6 @@ public class ResourceStorage implements ResourceReadable, ResourceRemovable, Res
     static String buildKey(String appKey, UUID id) {
         return String.format("%s:%s", appKey, id);
 
-    }
-
-    static NotFoundError createNotFoundError(String appKey, UUID id) {
-        return EUtils.createNotFoundError(buildKey(appKey, id));
     }
 
     public ResourceStorage(JsonMapper jsonMapper,
