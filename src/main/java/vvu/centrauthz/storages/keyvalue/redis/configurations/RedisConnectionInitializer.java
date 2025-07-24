@@ -18,7 +18,6 @@ public class RedisConnectionInitializer implements ApplicationEventListener<Star
     private final AsyncConnContext context;
     private static final Long NANOS = 1000000L;
 
-
     public RedisConnectionInitializer(RedisPoolConfig config, CompletionStage<BoundedAsyncPool<StatefulRedisConnection<byte[], byte[]>>> poolFuture) {
         this.config = config;
         context = new AsyncConnContext(poolFuture)
