@@ -26,6 +26,7 @@ public class ResourcesGrpc extends ResourcesServiceGrpc.ResourcesServiceImplBase
     private final ResourceService resourceService;
     private final Validator validator;
     private final JsonMapper jsonMapper;
+
     public ResourcesGrpc(Validator validator, JsonMapper jsonMapper, ResourceService resourceService) {
         this.validator = validator;
         this.resourceService = resourceService;

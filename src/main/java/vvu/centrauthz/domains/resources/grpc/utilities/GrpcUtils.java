@@ -1,18 +1,22 @@
 package vvu.centrauthz.domains.resources.grpc.utilities;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Struct;
 import com.google.rpc.Status;
 import io.micronaut.json.JsonMapper;
+import io.micronaut.json.tree.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import resources.Resources;
 import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.exceptions.*;
 import vvu.centrauthz.models.Error;
 import vvu.centrauthz.utilities.JsonTools;
-
+import com.google.protobuf.util.JsonFormat;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 public class GrpcUtils {
     GrpcUtils() {
         throw new IllegalStateException();
@@ -33,8 +37,6 @@ public class GrpcUtils {
 
     public static Resource convert(JsonMapper mapper,Resources.Resource input) {
 
-        var details = JsonTools.toJson(mapper, input.getDetails());
-
         return Resource.builder()
                 .id(UUID.fromString(input.getId()))
                 .applicationKey(input.getApplicationKey())
@@ -43,7 +45,6 @@ public class GrpcUtils {
                 .parentId(UUID.fromString(input.getParentId()))
                 .sharedWith(input.getSharedWithList().stream().map(UUID::fromString).toList())
                 .tags(input.getTagsList())
-                .details(details)
                 .createdAt(input.getCreatedAt())
                 .createdBy(UUID.fromString(input.getCreatedBy()))
                 .updatedAt(input.getUpdatedAt())
@@ -58,33 +59,45 @@ public class GrpcUtils {
                 .build();
     }
 
+    static Struct toStruct(JsonMapper mapper, JsonNode input) {
+
+        try {
+            Struct.Builder struct = Struct.newBuilder();
+            JsonFormat.parser().merge(JsonTools.toString(mapper, input), struct);
+            return struct.build();
+        } catch (InvalidProtocolBufferException e) {
+            throw new IllegalJsonValue(e);
+        }
+    }
+
     public static Resources.Resource convert(JsonMapper mapper, Resource input) {
 
-        String ownerId = Optional
-                .ofNullable(input.ownerId())
-                .map(UUID::toString)
-                .orElse(null);
-        String parentId = Optional
-                .ofNullable(input.parentId())
-                .map(UUID::toString)
-                .orElse(null);
-        var sharedWith = Optional.ofNullable(input.sharedWith())
-                .map(l -> l.stream().map(UUID::toString).toList())
-                .orElse(null);
-        var details = Optional.ofNullable(input.details())
-                .map(m -> JsonTools.toValue(mapper, m, Struct.class))
-                .orElse(null);
-
-        return Resources.Resource.newBuilder()
+        var builder = Resources.Resource.newBuilder()
                 .setId(input.id().toString())
                 .setApplicationKey(input.applicationKey())
-                .setType(input.type())
-                .setDetails(details)
-                .setOwnerId(ownerId)
-                .setParentId(parentId)
-                .addAllSharedWith(sharedWith)
-                .addAllTags(input.tags())
-                .build();
+                .setType(input.type());
+        Optional.ofNullable(input.ownerId())
+                .ifPresent( v -> builder.setOwnerId(v.toString()));
+        Optional.ofNullable(input.parentId())
+                .ifPresent( v -> builder.setParentId(v.toString()));
+        Optional.ofNullable(input.sharedWith())
+                .ifPresent( v -> builder.addAllSharedWith(v.stream().map(UUID::toString).toList()));
+        Optional.ofNullable(input.tags())
+                .ifPresent(builder::addAllTags);
+        Optional.ofNullable(input.tags())
+                .ifPresent(builder::addAllTags);
+        Optional.ofNullable(input.createdAt())
+                .ifPresent(builder::setCreatedAt);
+        Optional.ofNullable(input.createdBy())
+                .ifPresent( v -> builder.setCreatedBy(v.toString()));
+        Optional.ofNullable(input.updatedAt())
+                .ifPresent(builder::setUpdatedAt);
+        Optional.ofNullable(input.updatedBy())
+                .ifPresent( v -> builder.setUpdatedBy(v.toString()));
+
+        Optional.ofNullable(input.details()).ifPresent(d -> builder.setDetails(toStruct(mapper, d)));
+
+        return builder.build();
     }
 
     public static Resources.Error convert(Error input) {

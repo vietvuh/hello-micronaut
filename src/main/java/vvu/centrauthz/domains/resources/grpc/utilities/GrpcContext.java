@@ -3,11 +3,14 @@ package vvu.centrauthz.domains.resources.grpc.utilities;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
+import vvu.centrauthz.exceptions.EUtils;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
 
 public class GrpcContext<T> {
@@ -23,14 +26,21 @@ public class GrpcContext<T> {
         return this;
     }
 
+    private Throwable getError(Throwable error) {
+        if (error instanceof CompletionException ex) {
+            return Objects.nonNull(ex.getCause()) ? ex.getCause() : ex;
+        }
+        return error;
+    }
+
     private void processError(Throwable error) {
         Optional.ofNullable(logger)
-                .ifPresent(l -> l.error(error.getMessage(), error));
+                .ifPresent(l -> l.error(ExceptionUtils.getStackTrace(error)));
 
-        var appError = GrpcUtils.toAppError(error);
+        var ex = getError(error);
+        var appError = GrpcUtils.toAppError(ex);
         var status = GrpcUtils.toStatus(appError);
-        StatusRuntimeException ex = StatusProto.toStatusRuntimeException(status);
-        responseObserver.onError(ex);
+        responseObserver.onError(StatusProto.toStatusRuntimeException(status));
     }
 
     public void execute(Supplier<CompletableFuture<T>> supplier) {
@@ -44,12 +54,14 @@ public class GrpcContext<T> {
                     } else {
                         responseObserver.onNext(value);
                     }
+                    responseObserver.onCompleted();
                     var end = System.currentTimeMillis() - start;
                     Optional.ofNullable(logger)
                             .ifPresent(l -> l.info("Execution time: {} ms", end));
             });
         } catch (Exception e) {
             processError(e);
+            responseObserver.onCompleted();
         }
     }
 
