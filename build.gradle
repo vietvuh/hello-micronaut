@@ -2,8 +2,8 @@ plugins {
     id("io.micronaut.application") version "4.5.4"
     id("com.gradleup.shadow") version "8.3.7"
     id("io.micronaut.aot") version "4.5.4"
+    id ('com.google.protobuf') version "0.9.5"
 }
-
 
 version = "0.1"
 group = "vvu.centrauthz"
@@ -38,12 +38,28 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("org.yaml:snakeyaml")
 
+    // gRPC dependencies
+    implementation("io.grpc:grpc-netty-shaded:1.73.0")
+    implementation("io.grpc:grpc-protobuf:1.73.0")
+    implementation("io.grpc:grpc-stub:1.73.0")
+    implementation("io.grpc:grpc-services:1.73.0")
+    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-java-util:3.25.3")
+    
+    // Micronaut gRPC
+    implementation("io.micronaut.grpc:micronaut-grpc-runtime")
+    implementation("io.micronaut.grpc:micronaut-grpc-server-runtime")
+    
+    // For annotation processing with gRPC
+    compileOnly("org.apache.tomcat:annotations-api:6.0.53")
+
     // Test dependencies
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("io.projectreactor:reactor-test:3.8.0-M4")
     testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("io.micronaut.serde:micronaut-serde-api")
     testImplementation("io.micronaut.serde:micronaut-serde-jackson")
+    testImplementation("io.grpc:grpc-testing:1.73.0")
 }
 
 application {
@@ -94,3 +110,27 @@ graalvmNative {
     }
 }
 
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.3"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.73.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}

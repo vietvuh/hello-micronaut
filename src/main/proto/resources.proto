@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package resources;
+
+import "google/protobuf/struct.proto";
+
+// Error message
+message Error {
+  string code = 1;
+  string message = 2;
+  map<string, string> details = 3;
+}
+
+// Resource message
+message Resource {
+  string id = 1;
+  string type = 2;
+  string ownerId = 3;
+  string parentId = 4;
+  string applicationKey = 5;
+  repeated string sharedWith = 6;
+  repeated string tags = 7;
+  google.protobuf.Struct details = 8;
+  int64 createdAt = 9;
+  string createdBy = 10;
+  int64 updatedAt = 11;
+  string updatedBy = 12;
+}
+
+// GetResource request
+message GetResourceRequest {
+  string id = 1;
+  string applicationKey = 2;
+}
+
+// GetResource response
+message GetResourceResponse {
+  Resource resource = 1;
+}
+
+// PutResource request
+message PutResourceRequest {
+  Resource resource = 1;
+  bool force = 2;
+}
+
+// PutResource response
+message PutResourceResponse {
+}
+
+// Resources service definition
+service ResourcesService {
+  rpc GetResource(GetResourceRequest) returns (GetResourceResponse);
+  rpc PutResource(PutResourceRequest) returns (PutResourceResponse);
+}
