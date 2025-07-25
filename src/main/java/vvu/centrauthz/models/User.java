@@ -1,4 +1,4 @@
-package vvu.centrauthz.domains.resources.models;
+package vvu.centrauthz.models;
 
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;

@@ -1,9 +1,10 @@
 package vvu.centrauthz.domains.resources.models;
 
+import io.micronaut.json.tree.JsonNode;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import io.micronaut.serde.annotation.Serdeable;
 import io.micronaut.core.annotation.Introspected;
-import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
@@ -15,10 +16,10 @@ import java.util.UUID;
 @Introspected
 @Builder(toBuilder = true)
 public record ResourceForPatch(
-    @NonNull
+    @NotNull
     List<String> updatedFields,
     
-    @NonNull
+    @NotNull
     ResourcePatchData data
 ) {
     
@@ -45,7 +46,7 @@ public record ResourceForPatch(
         List<String> tags,
         
         @Nullable
-        java.util.Map<String, Object> details
+        JsonNode details
     ) {
     }
 }

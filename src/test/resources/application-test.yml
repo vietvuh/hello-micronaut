@@ -1,0 +1,10 @@
+# src/test/resources/application-test.yml
+micronaut:
+  application:
+    name: your-app-test
+
+# Disable Redis completely
+redis:
+  enabled: false
+  lettuce:
+    enabled: false

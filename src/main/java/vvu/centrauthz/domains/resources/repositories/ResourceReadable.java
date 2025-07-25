@@ -5,6 +5,6 @@ import vvu.centrauthz.domains.resources.models.Resource;
 
 import java.util.UUID;
 
-public interface Readable {
+public interface ResourceReadable {
     Mono<Resource> get(String appKey, UUID id);
 }

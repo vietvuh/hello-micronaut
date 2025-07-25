@@ -1,0 +1,20 @@
+[
+  {
+    "interfaces": [
+      "io.lettuce.core.api.async.RedisAsyncCommands",
+      "io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands"
+    ]
+  },
+  {
+    "interfaces": [
+      "io.lettuce.core.api.sync.RedisCommands",
+      "io.lettuce.core.cluster.api.sync.RedisClusterCommands"
+    ]
+  },
+  {
+    "interfaces": [
+      "io.lettuce.core.api.reactive.RedisReactiveCommands",
+      "io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands"
+    ]
+  }
+]

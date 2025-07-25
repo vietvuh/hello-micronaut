@@ -1,5 +1,8 @@
 package vvu.centrauthz.exceptions;
 
+/**
+ * Error Utilities
+ */
 public class EUtils {
     EUtils() {
         throw new IllegalStateException();
@@ -12,4 +15,5 @@ public class EUtils {
     public static BadRequestError createBadRequestError(String message) {
         return new BadRequestError(message);
     }
+
 }

@@ -4,29 +4,47 @@ plugins {
     id("io.micronaut.aot") version "4.5.4"
 }
 
+
 version = "0.1"
 group = "vvu.centrauthz"
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
+    // Annotation Processors
     annotationProcessor("io.micronaut:micronaut-http-validation")
     annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
     annotationProcessor("org.projectlombok:lombok")
+
+    // Implementation dependencies
     implementation("io.micrometer:context-propagation")
     implementation("io.micronaut.reactor:micronaut-reactor")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation("io.micronaut.validation:micronaut-validation")
     implementation("jakarta.validation:jakarta.validation-api")
+    implementation("org.apache.commons:commons-lang3:3.18.0")
+    implementation("io.micronaut.redis:micronaut-redis-lettuce")
+    implementation("io.micronaut:micronaut-management")
+
+    // Compile-only dependencies
     compileOnly("io.micronaut:micronaut-http-client")
     compileOnly("org.projectlombok:lombok")
+
+    // Runtime dependencies
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("org.yaml:snakeyaml")
-    testImplementation("io.micronaut:micronaut-http-client")
-}
 
+    // Test dependencies
+    testImplementation("io.micronaut:micronaut-http-client")
+    testImplementation("io.projectreactor:reactor-test:3.8.0-M4")
+    testImplementation("org.mockito:mockito-core:5.18.0")
+    testImplementation("io.micronaut.serde:micronaut-serde-api")
+    testImplementation("io.micronaut.serde:micronaut-serde-jackson")
+}
 
 application {
     mainClass = "vvu.centrauthz.Application"
@@ -65,4 +83,14 @@ tasks.named("dockerfileNative") {
     jdkVersion = "21"
 }
 
+graalvmNative {
+    binaries {
+        main {
+            buildArgs.add('--verbose')
+            buildArgs.add('--no-fallback')
+            buildArgs.add('-H:+ReportExceptionStackTraces')
+            buildArgs.add('-H:ConfigurationFileDirectories=src/main/resources/META-INF/native-image')
+        }
+    }
+}
 

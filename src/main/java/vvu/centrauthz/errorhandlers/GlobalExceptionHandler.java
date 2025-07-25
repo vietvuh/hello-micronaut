@@ -6,11 +6,13 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Error;
+import io.micronaut.json.JsonSyntaxException;
+import io.micronaut.web.router.exceptions.UnsatisfiedHeaderRouteException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
-import vvu.centrauthz.exceptions.AppError;
-import vvu.centrauthz.exceptions.ConflictError;
-import vvu.centrauthz.exceptions.NotFoundError;
+import vvu.centrauthz.exceptions.*;
+import vvu.centrauthz.utilities.StringTools;
 
 /**
  * Global exception handler for all controller errors.
@@ -20,11 +22,11 @@ import vvu.centrauthz.exceptions.NotFoundError;
 public class GlobalExceptionHandler {
 
     @Error(global = true)
-    public Mono<HttpResponse<vvu.centrauthz.domains.resources.models.Error>> handleException(HttpRequest<?> request, Exception exception) {
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, Exception exception) {
         log.error("Unhandled exception occurred", exception);
         return Mono.just(
                 HttpResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(vvu.centrauthz.domains.resources.models.Error.builder()
+                        .body(vvu.centrauthz.models.Error.builder()
                                 .code("INTERNAL_SERVER_ERROR")
                                 .message(exception.getMessage())
                                 .build())
@@ -32,11 +34,40 @@ public class GlobalExceptionHandler {
     }
 
     @Error(global = true)
-    public Mono<HttpResponse<vvu.centrauthz.domains.resources.models.Error>> handleException(HttpRequest<?> request, ConversionErrorException exception) {
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, ConstraintViolationException exception) {
+
+        var details = StringTools.exceptionToMap(exception);
+
+        var error = vvu.centrauthz.models.Error.builder()
+            .code("VALIDATION_ERROR")
+            .details(details)
+            .build();
+
+        return Mono.just(
+            HttpResponse.status(HttpStatus.BAD_REQUEST)
+                .body(error));
+    }
+
+    @Error(global = true)
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, JsonSyntaxException exception) {
+
+        var error = vvu.centrauthz.models.Error.builder()
+                .code("JSON_BODY_ERROR")
+                .message(exception.getMessage())
+                .build();
+
+        return Mono.just(
+                HttpResponse.status(HttpStatus.BAD_REQUEST)
+                        .body(error));
+    }
+
+    // UnsatisfiedHeaderRouteException
+    @Error(global = true)
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, UnsatisfiedHeaderRouteException exception) {
         log.error("ConversionErrorException: {}", exception.getMessage(), exception);
         return Mono.just(
                 HttpResponse.status(HttpStatus.BAD_REQUEST)
-                        .body(vvu.centrauthz.domains.resources.models.Error.builder()
+                        .body(vvu.centrauthz.models.Error.builder()
                                 .code("BAD_REQUEST")
                                 .message(exception.getMessage())
                                 .build())
@@ -44,29 +75,48 @@ public class GlobalExceptionHandler {
     }
 
     @Error(global = true)
-    public Mono<HttpResponse<vvu.centrauthz.domains.resources.models.Error>> handleException(HttpRequest<?> request, AppError exception) {
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, ConversionErrorException exception) {
+        log.error("ConversionErrorException: {}", exception.getMessage(), exception);
+        return Mono.just(
+                HttpResponse.status(HttpStatus.BAD_REQUEST)
+                        .body(vvu.centrauthz.models.Error.builder()
+                                .code("BAD_REQUEST")
+                                .message(exception.getMessage())
+                                .build())
+        );
+    }
+
+    @Error(global = true)
+    public Mono<HttpResponse<vvu.centrauthz.models.Error>> handleException(HttpRequest<?> request, AppError exception) {
         log.error("AppError: {}", exception.toString(), exception);
 
-        if (exception instanceof NotFoundError) {
-            return Mono.just(
+        switch (exception) {
+            case NotFoundError notFoundError -> {
+                return Mono.just(
                     HttpResponse.status(HttpStatus.NOT_FOUND)
-                            .body(exception.getError())
-            );
-        }
-
-        if (exception instanceof ConflictError) {
-            return Mono.just(
+                        .body(notFoundError.getError())
+                );
+            }
+            case ConflictError conflictError -> {
+                return Mono.just(
                     HttpResponse.status(HttpStatus.CONFLICT)
-                            .body(exception.getError())
-            );
-        }
-
-        // Handle NOT_IMPLEMENTED errors with 503 status
-        if ("NOT_IMPLEMENTED".equals(exception.getError().code())) {
-            return Mono.just(
-                    HttpResponse.status(HttpStatus.SERVICE_UNAVAILABLE)
-                            .body(exception.getError())
-            );
+                        .body(conflictError.getError())
+                );
+            }
+            case BadRequestError badRequestError -> {
+                return Mono.just(
+                    HttpResponse.status(HttpStatus.BAD_REQUEST)
+                        .body(badRequestError.getError())
+                );
+            }
+            case NotImplementedError notImplementedError -> {
+                return Mono.just(
+                    HttpResponse.status(HttpStatus.NOT_IMPLEMENTED)
+                        .body(notImplementedError.getError())
+                );
+            }
+            default -> {
+            }
         }
 
         return Mono.just(

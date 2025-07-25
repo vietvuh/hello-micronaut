@@ -188,6 +188,8 @@ components:
         id:
           type: string
           format: uuid
+        applicationKey:
+          type: string
         type:
           type: string
           minLength: 1
@@ -233,6 +235,7 @@ components:
         - id
         - type
         - ownerId
+        - applicationKey
     ResourceForPatch:
       type: object
       properties:
