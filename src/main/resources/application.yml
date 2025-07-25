@@ -6,6 +6,17 @@ micronaut:
     enabled: true
   server:
     port: 3000
+  grpc:
+    server:
+      port: 9090
+    channels:
+      default:
+        address: "localhost:9090"
+        plaintext: true
+
+grpc:
+  server:
+    port: 9090
 redis:
   uri: ${REDIS_URI:redis://localhost:6379}
   ssl: ${REDIS_SSL:false}
