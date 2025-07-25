@@ -83,4 +83,14 @@ tasks.named("dockerfileNative") {
     jdkVersion = "21"
 }
 
+graalvmNative {
+    binaries {
+        main {
+            buildArgs.add('--verbose')
+            buildArgs.add('--no-fallback')
+            buildArgs.add('-H:+ReportExceptionStackTraces')
+            buildArgs.add('-H:ConfigurationFileDirectories=src/main/resources/META-INF/native-image')
+        }
+    }
+}
 

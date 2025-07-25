@@ -1,0 +1,22 @@
+[
+  {
+    "name": "io.lettuce.core.api.async.RedisAsyncCommands",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.lettuce.core.api.sync.RedisCommands",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "io.lettuce.core.cluster.api.sync.RedisClusterCommands",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  }
+]
