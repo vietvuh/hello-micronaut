@@ -1,11 +1,15 @@
 package vvu.centrauthz.domains.resources.models;
 
+import io.lettuce.core.RedisClient;
+import io.micronaut.context.env.Environment;
 import io.micronaut.json.JsonMapper;
+import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.mockito.Mockito;
 import vvu.centrauthz.utilities.JsonTools;
 
 import java.util.List;
@@ -14,7 +18,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@MicronautTest
+@MicronautTest(environments = Environment.TEST)
 class ResourceTest {
 
     @Inject
