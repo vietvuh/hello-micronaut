@@ -3,6 +3,7 @@ package vvu.centrauthz.domains.resources.controllers;
 import io.micronaut.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -17,8 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 
 class ResourceControllerTest {
 
@@ -65,13 +65,16 @@ class ResourceControllerTest {
                 .build();
         var id = UUID.randomUUID();
 
+        Boolean force = false;
+
         var appKeyCaptor = ArgumentCaptor.forClass(String.class);
         var contextCaptor = ArgumentCaptor.forClass(Context.class);
         var resourceCaptor = ArgumentCaptor.forClass(Resource.class);
+        var forceCaptor = ArgumentCaptor.forClass(Boolean.class);
 
-        Mockito.when(service.save(appKeyCaptor.capture() ,resourceCaptor.capture(), contextCaptor.capture())).thenReturn(Mono.just(Void.create()));
+        Mockito.when(service.save(appKeyCaptor.capture() ,resourceCaptor.capture(), forceCaptor.capture(),contextCaptor.capture())).thenReturn(Mono.just(Void.create()));
 
-        StepVerifier.create(controller.updateResource(userId, appKey, id, expectedResource))
+        StepVerifier.create(controller.updateResource(userId, appKey, id, expectedResource, force))
                 .assertNext( response -> {
                     assertEquals(HttpStatus.NO_CONTENT, response.status());
                     assertNull(response.body());
@@ -80,7 +83,7 @@ class ResourceControllerTest {
         assertNotNull(contextCaptor.getValue());
         assertEquals(appKey, appKeyCaptor.getValue());
         assertEquals(id, resourceCaptor.getAllValues().getLast().id());
-        Mockito.verify(service, Mockito.times(1)).save(anyString(), any(Resource.class), any(Context.class));
+        Mockito.verify(service, Mockito.times(1)).save(anyString(), any(Resource.class), any(Boolean.class), any(Context.class));
     }
 
     @Test
@@ -97,11 +100,14 @@ class ResourceControllerTest {
         var appKeyCaptor = ArgumentCaptor.forClass(String.class);
         var contextCaptor = ArgumentCaptor.forClass(Context.class);
         var resourceCaptor = ArgumentCaptor.forClass(Resource.class);
+        var forceCaptor = ArgumentCaptor.forClass(Boolean.class);
         var userId = UUID.randomUUID();
+        Boolean force = null;
 
-        Mockito.when(service.save(appKeyCaptor.capture() ,resourceCaptor.capture(), contextCaptor.capture())).thenReturn(Mono.just(Void.create()));
+        Mockito.when(service.save(appKeyCaptor.capture() ,resourceCaptor.capture(), forceCaptor.capture(),contextCaptor.capture()))
+                .thenReturn(Mono.just(Void.create()));
 
-        StepVerifier.create(controller.updateResource(userId, appKey, expectedResource.id(), expectedResource))
+        StepVerifier.create(controller.updateResource(userId, appKey, expectedResource.id(), expectedResource, force))
                 .assertNext( response -> {
                     assertEquals(HttpStatus.NO_CONTENT, response.status());
                     assertNull(response.body());
@@ -109,7 +115,8 @@ class ResourceControllerTest {
                 .verifyComplete();
         assertNotNull(contextCaptor.getValue());
         assertEquals(appKey, appKeyCaptor.getAllValues().getLast());
-        Mockito.verify(service, Mockito.times(1)).save(anyString(), any(Resource.class), any(Context.class));
+        Mockito.verify(service, Mockito.times(1))
+                .save(anyString(), any(Resource.class), ArgumentMatchers.isNull(),any(Context.class));
     }
 
     @Test
@@ -127,16 +134,19 @@ class ResourceControllerTest {
         var appKeyCaptor = ArgumentCaptor.forClass(String.class);
         var contextCaptor = ArgumentCaptor.forClass(Context.class);
         var resourceCaptor = ArgumentCaptor.forClass(Resource.class);
+        var forceCaptor = ArgumentCaptor.forClass(Boolean.class);
+        Boolean force = null;
 
-        Mockito.when(service.save(appKeyCaptor.capture() ,resourceCaptor.capture(), contextCaptor.capture())).thenReturn(Mono.just(Void.create()));
+        Mockito.when(service.save(appKeyCaptor.capture() ,resourceCaptor.capture(), forceCaptor.capture(), contextCaptor.capture()))
+                .thenReturn(Mono.just(Void.create()));
 
-        StepVerifier.create(controller.updateResource(userId, appKey, UUID.randomUUID(), expectedResource))
+        StepVerifier.create(controller.updateResource(userId, appKey, UUID.randomUUID(), expectedResource, force))
                 .expectErrorSatisfies( e -> {
                     assertInstanceOf(BadRequestError.class, e);
                     assertEquals("INVALID_ID", ((BadRequestError)e).getError().code());
                 })
                 .verify();
-        Mockito.verify(service, Mockito.times(0)).save(anyString(), any(Resource.class), any(Context.class));
+        Mockito.verify(service, Mockito.times(0)).save(anyString(), any(Resource.class), ArgumentMatchers.isNull(),any(Context.class));
     }
 
     @Test

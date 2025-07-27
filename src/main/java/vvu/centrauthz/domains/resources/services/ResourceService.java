@@ -93,20 +93,31 @@ public class ResourceService {
                 .execute();
     }
 
-    private Mono<Void> saveResource(String appKey, Resource resource, Context context) {
+    private Mono<Void> saveResource(String appKey, Resource resource, Boolean force, Context context) {
         return getResource(appKey, resource.id())
-                .flatMap(r -> {
-                    r = r.toBuilder()
-                            .updatedBy(context.user().id())
-                            .updatedAt(System.currentTimeMillis())
-                            .build();
-                    return resourceWritable.save(appKey, r);
+                .map( r -> resource.toBuilder()
+                        .createdBy(r.createdBy())
+                        .createdAt(r.createdAt())
+                        .updatedBy(context.user().id())
+                        .updatedAt(System.currentTimeMillis())
+                        .build())
+                .flatMap(r -> resourceWritable.save(appKey, r))
+                .onErrorResume(throwable -> {
+                    if (!Boolean.TRUE.equals(force)) {
+                        return Mono.error(throwable);
+                    }
+
+                    if (throwable instanceof NotFoundError) {
+                        return saveNewResource(appKey, resource, context).map(v -> Void.INSTANCE);
+                    }
+                    return Mono.error(throwable);
+
                 });
     }
 
-    public Mono<Void> save(String appKey, Resource resource, Context context) {
+    public Mono<Void> save(String appKey, Resource resource, Boolean force, Context context) {
         return Executor
-                .mono(() -> saveResource(appKey, resource, context))
+                .mono(() -> saveResource(appKey, resource, force, context))
                 .withLogger(log)
                 .withContext(context)
                 .execute();

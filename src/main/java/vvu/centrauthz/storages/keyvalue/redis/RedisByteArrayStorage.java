@@ -14,6 +14,7 @@ import vvu.centrauthz.models.Void;
 import vvu.centrauthz.storages.interfaces.Readable;
 import vvu.centrauthz.storages.interfaces.Removable;
 import vvu.centrauthz.storages.interfaces.Writable;
+import vvu.centrauthz.storages.keyvalue.redis.events.EventCreator;
 import vvu.centrauthz.storages.keyvalue.redis.exceptions.RedisError;
 import vvu.centrauthz.storages.keyvalue.redis.utilities.AsyncConnContext;
 import vvu.centrauthz.utilities.JsonTools;
@@ -31,12 +32,15 @@ public class RedisByteArrayStorage implements Readable<JsonNode>, Writable<JsonN
 
     private final JsonMapper mapper;
     private final AsyncConnContext context;
+    private final EventCreator eventCreator;
 
     public RedisByteArrayStorage(
             JsonMapper mapper,
+            EventCreator eventCreator,
             CompletionStage<BoundedAsyncPool<StatefulRedisConnection<byte[], byte[]>>> poolFuture) {
         this.mapper = mapper;
         this.context = new AsyncConnContext(poolFuture);
+        this.eventCreator = eventCreator;
     }
 
     private CompletableFuture<JsonNode> getFuture(String key) {
@@ -59,7 +63,10 @@ public class RedisByteArrayStorage implements Readable<JsonNode>, Writable<JsonN
                 command.set(key.getBytes(StandardCharsets.UTF_8), value)
                 .toCompletableFuture()
                 .exceptionallyCompose( e -> CompletableFuture.failedFuture(new RedisError(e)))
-                .thenApply( v -> Void.INSTANCE));
+                .thenApply( v -> {
+                    eventCreator.raiseEvent(EventCreator.createEvent(key, node));
+                    return Void.INSTANCE;
+                }));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -71,7 +78,10 @@ public class RedisByteArrayStorage implements Readable<JsonNode>, Writable<JsonN
                 command.del(key.getBytes(StandardCharsets.UTF_8))
                     .toCompletableFuture()
                     .exceptionallyCompose( e -> CompletableFuture.failedFuture(new RedisError(e)))
-                    .thenApply( v -> Void.INSTANCE));
+                    .thenApply( v -> {
+                        eventCreator.raiseEvent(EventCreator.composeDeletedEvent(key));
+                        return Void.INSTANCE;
+                    }));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
