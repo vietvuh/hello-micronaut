@@ -1,7 +1,6 @@
 package vvu.centrauthz.storages.keyvalue.redis.events;
 
 import io.micronaut.json.JsonMapper;
-import io.micronaut.json.tree.JsonNode;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,7 @@ class EventCreatorTest {
                 .createdBy(UUID.randomUUID())
                 .build();
         var resourceJson = JsonTools.toJson(jsonMapper, resource);
-        var event =EventCreator.createEvent(ChangedEvent.EventType.CHANGED, resource.id().toString(),resourceJson);
+        var event = EventCreator.createEvent(ChangedEvent.EventType.CHANGED, resource.id().toString(), resourceJson);
 
         assertEquals(ChangedEvent.EventType.CHANGED, event.type());
         assertEquals(resource.id().toString(), event.path());
@@ -49,7 +48,7 @@ class EventCreatorTest {
                 .createdBy(UUID.randomUUID())
                 .build();
         var resourceJson = JsonTools.toJson(jsonMapper, resource);
-        var event =EventCreator.createEvent(resource.id().toString(),resourceJson);
+        var event = EventCreator.createEvent(resource.id().toString(), resourceJson);
 
         assertEquals(ChangedEvent.EventType.CREATED, event.type());
         assertEquals(resource.id().toString(), event.path());
@@ -60,7 +59,7 @@ class EventCreatorTest {
                 .updatedBy(UUID.randomUUID())
                 .updatedAt(System.currentTimeMillis()).build();
         resourceJson = JsonTools.toJson(jsonMapper, resource);
-        var event2  =EventCreator.createEvent(resource.id().toString(),resourceJson);
+        var event2 = EventCreator.createEvent(resource.id().toString(), resourceJson);
         assertEquals(ChangedEvent.EventType.UPDATED, event2.type());
         assertEquals(resource.id().toString(), event2.path());
         assertTrue(event2.timestamp() > event.timestamp());

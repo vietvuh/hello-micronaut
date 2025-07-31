@@ -22,6 +22,15 @@ public class EventCreator {
         this.enabled = enabled;
     }
 
+    /**
+     * Create a {@link ChangedEvent} for the given {@link ChangedEvent.EventType} and key, with the given JSON node
+     * as the value.
+     *
+     * @param type the type of the event
+     * @param key the key identifying the resource
+     * @param node the JSON node representing the resource
+     * @return a new {@link ChangedEvent} with the given type, key, value, and current timestamp
+     */
     public static ChangedEvent<JsonNode> createEvent(ChangedEvent.EventType type, String key, JsonNode node) {
         return ChangedEvent
                 .<JsonNode>builder()
@@ -32,11 +41,30 @@ public class EventCreator {
                 .build();
     }
 
+    /**
+     * Determines if the given {@link JsonNode} represents an update event.
+     *
+     * <p>An update event is defined as a {@link JsonNode} that contains a non-null
+     * "updatedBy" property.
+     *
+     * @param node the JSON node to inspect
+     * @return true if the given JSON node represents an update event, false otherwise
+     */
     static boolean isUpdated(JsonNode node) {
         var updatedBy = node.get("updatedBy");
         return Objects.nonNull(updatedBy);
     }
 
+    /**
+     * Create a {@link ChangedEvent} for the given key and JSON node.
+     *
+     * <p>If the given JSON node is null, or if the JSON node is an update event (i.e. it contains a non-null "updatedBy"
+     * property), then the type of the event is inferred from the JSON node.
+     *
+     * @param key the key identifying the resource
+     * @param node the JSON node representing the resource
+     * @return a new {@link ChangedEvent} with the inferred type, the given key, the given value, and the current timestamp
+     */
     public static ChangedEvent<JsonNode> createEvent(String key, JsonNode node) {
 
         if (Objects.isNull(node) || node.isNull()) {
@@ -47,10 +75,21 @@ public class EventCreator {
         return createEvent(type, key, node);
     }
 
+    /**
+     * Creates a {@link ChangedEvent} of type {@link ChangedEvent.EventType#REMOVED} for the given key and null value.
+     *
+     * @param key the key identifying the resource to be deleted
+     * @return a new {@link ChangedEvent} with the given key, null value, and the current timestamp
+     */
     public static ChangedEvent<JsonNode> composeDeletedEvent(String key) {
         return createEvent(ChangedEvent.EventType.REMOVED, key, null);
     }
 
+    /**
+     * Publishes the given event to the event bus, but only if events are enabled.
+     *
+     * @param event the event to publish
+     */
     public void raiseEvent(ChangedEvent<JsonNode> event) {
         try {
             if (!Boolean.TRUE.equals(enabled)) {
