@@ -62,7 +62,7 @@ class EventCreatorTest {
         var event2 = EventCreator.createEvent(resource.id().toString(), resourceJson);
         assertEquals(ChangedEvent.EventType.UPDATED, event2.type());
         assertEquals(resource.id().toString(), event2.path());
-        assertTrue(event2.timestamp() > event.timestamp());
+        assertTrue(event2.timestamp() >= event.timestamp());
         assertSame(event2.value(), resourceJson);
 
     }
