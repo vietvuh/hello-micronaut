@@ -13,6 +13,8 @@ redis:
   codec: byte-array
   io-thread-pool-size: 5
   computation-thread-pool-size: 4
+  cdc:
+    enabled: ${CDC_ENABLED:false}
   pool:
     enabled: true
     max-active: 10

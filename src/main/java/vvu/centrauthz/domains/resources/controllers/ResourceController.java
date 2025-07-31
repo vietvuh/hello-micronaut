@@ -9,9 +9,14 @@ import reactor.core.publisher.Mono;
 import vvu.centrauthz.domains.resources.models.Resource;
 import vvu.centrauthz.domains.resources.models.ResourceForPatch;
 import vvu.centrauthz.domains.resources.services.ResourceService;
+import vvu.centrauthz.domains.resources.validators.ResourceForPatchValidator;
+import vvu.centrauthz.domains.resources.validators.ResourceValidator;
 import vvu.centrauthz.utilities.ConstantValues;
 import vvu.centrauthz.utilities.Context;
 import vvu.centrauthz.exceptions.BadRequestError;
+import vvu.centrauthz.utilities.Executor;
+import vvu.centrauthz.utilities.executors.MonoExecutor;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -62,17 +67,13 @@ public class ResourceController {
             @Header(ConstantValues.X_USER_ID_HEADER) @Nullable UUID userId,
             @PathVariable @NonNull String applicationKey,
             @PathVariable @NonNull UUID id,
-            @Body @Valid @NonNull Resource resource) {
-
-        if (Objects.nonNull(resource.id()) && !resource.id().equals(id)) {
-            return Mono.error(new BadRequestError("INVALID_ID", "Resource ID in path does not match resource ID in body"));
-        }
-
-
+            @Body @Valid @NonNull Resource resource,
+            @QueryValue(defaultValue = "false") Boolean force) {
 
         return Mono.just(resource)
-                .map(r -> r.toBuilder().id(id).build())
-                .flatMap(r -> service.save(applicationKey, r, context(userId, applicationKey)))
+                .map( r -> Objects.nonNull(r.id()) ? r : r.toBuilder().id(id).build())
+                .doOnNext( r -> ResourceValidator.create(r, applicationKey, id).validate())
+                .flatMap(r -> service.save(applicationKey, r, force, context(userId, applicationKey)))
                 .map( v -> HttpResponse.noContent());
     }
 
@@ -92,6 +93,7 @@ public class ResourceController {
             @Body @Valid @NonNull ResourceForPatch resourcePatch) {
 
         return Mono.just(resourcePatch)
+                .doOnNext( r -> ResourceForPatchValidator.create(r).validate())
                 .flatMap(patcher -> service.patch(applicationKey, id, patcher, context(userId, applicationKey)))
                 .map( v -> HttpResponse.noContent());
     }
@@ -125,8 +127,10 @@ public class ResourceController {
             @PathVariable @NonNull String applicationKey,
             @Body @Valid @NonNull Resource resource) {
         return Mono.just(resource)
+                .doOnNext( r -> ResourceValidator.create(r, applicationKey).validate())
             .flatMap(r -> service
                         .create(applicationKey, r, context(userId, applicationKey)))
                 .map(HttpResponse::created);
     }
+
 }
