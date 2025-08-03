@@ -16,4 +16,12 @@ public class EUtils {
         return new BadRequestError(message);
     }
 
+    public static NotImplementedError createNotImplementedError(String message) {
+        return new NotImplementedError(message);
+    }
+
+    public static NotImplementedError createNotImplementedError() {
+        return new NotImplementedError("Feature not implemented");
+    }
+
 }

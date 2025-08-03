@@ -13,9 +13,6 @@ import vvu.centrauthz.domains.resources.validators.ResourceForPatchValidator;
 import vvu.centrauthz.domains.resources.validators.ResourceValidator;
 import vvu.centrauthz.utilities.ConstantValues;
 import vvu.centrauthz.utilities.Context;
-import vvu.centrauthz.exceptions.BadRequestError;
-import vvu.centrauthz.utilities.Executor;
-import vvu.centrauthz.utilities.executors.MonoExecutor;
 
 import java.util.Objects;
 import java.util.UUID;
